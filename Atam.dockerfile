@@ -3,12 +3,12 @@ RUN apt-get update
 COPY ./*.deb ./deb_files/
 RUN apt-get install -y man-db
 
-RUN apt-get install -y ./deb_files/binutils-common_2.30-21ubuntu1~18.04.2_amd64.deb  --allow-downgrades
-RUN apt-get install -y ./deb_files/libbinutils_2.30-21ubuntu1~18.04.2_amd64.deb  --allow-downgrades
-RUN apt-get install -y ./deb_files/binutils-x86-64-linux-gnu_2.30-21ubuntu1~18.04.2_amd64.deb  --allow-downgrades
-RUN apt-get install -y ./deb_files/binutils_2.30-21ubuntu1~18.04.2_amd64.deb  --allow-downgrades
-RUN apt-get install -y ./deb_files/binutils-doc_2.30-21ubuntu1~18.04.2_all.deb  --allow-downgrades
-RUN apt-get install -y ./deb_files/gcc-7-base_7.4.0-1ubuntu1~18.04.1_amd64.deb  --allow-downgrades
+RUN apt-get install -y ./deb_files/binutils-common_2.30-21ubuntu1~18.04.2_amd64.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/libbinutils_2.30-21ubuntu1~18.04.2_amd64.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/binutils-x86-64-linux-gnu_2.30-21ubuntu1~18.04.2_amd64.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/binutils_2.30-21ubuntu1~18.04.2_amd64.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/binutils-doc_2.30-21ubuntu1~18.04.2_all.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/gcc-7-base_7.4.0-1ubuntu1~18.04.1_amd64.deb --allow-downgrades
 RUN apt-get purge -y cpp-7
 RUN apt-get install -y ./deb_files/cpp-7_7.4.0-1ubuntu1~18.04.1_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/cpp-7-doc_7.4.0-1ubuntu1~18.04.1_all.deb --allow-downgrades
