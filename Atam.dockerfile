@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 RUN apt-get update
 COPY ./*.deb ./deb_files/
+RUN apt-get install -y less
 RUN apt-get install -y man-db
 
 RUN apt-get install -y ./deb_files/binutils-common_2.30-21ubuntu1~18.04.2_amd64.deb --allow-downgrades
