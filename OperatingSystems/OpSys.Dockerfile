@@ -3,7 +3,8 @@ RUN apt-get update
 COPY ./*.deb ./deb_files/
 RUN apt-get install -y less man-db
 # Timezone for tzdata
-ENV TZ=Asia/Jerusalem
+ARG TZ=Asia/Jerusalem
+# ARG DEBIAN_FRONTEND=noninteractive
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get install -y xfce4 xubuntu-desktop
 
