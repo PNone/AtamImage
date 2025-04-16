@@ -37,6 +37,8 @@ jobs:
 
       # --- Build atam-build image ---
       - name: Build atam-build image
+          # --load \
+          # --push
         run: |
           docker buildx build \
             --builder default \
@@ -47,14 +49,15 @@ jobs:
             -t $DOCKERHUB_USER/atam-build:$COMMIT_TAG \
             -f atam/Atam.Dockerfile atam \
             --cache-from type=local,src=/tmp/.buildx-cache \
-            --load \
-            --push
+            --load
         env:
           STUDENT_PASS_ATAM: ${{ secrets.STUDENT_PASS_ATAM }}
           STUDENT_UID_ATAM: ${{ secrets.STUDENT_UID_ATAM }}
 
       # --- Build opsys-build image ---
       - name: Build opsys-build image
+          # --load \
+          # --push
         run: |
           docker buildx build \
             --builder default \
@@ -65,8 +68,7 @@ jobs:
             -t $DOCKERHUB_USER/opsys-build:$COMMIT_TAG \
             -f OperatingSystems/OpSys.Dockerfile OperatingSystems \
             --cache-from type=local,src=/tmp/.buildx-cache \
-            --load \
-            --push
+            --load
         env:
           STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
           STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
