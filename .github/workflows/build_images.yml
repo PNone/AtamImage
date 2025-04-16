@@ -39,43 +39,51 @@ jobs:
             --platform linux/amd64 \
             --secret id=student_pass_atam,env=STUDENT_PASS_ATAM \
             --secret id=student_uid_atam,env=STUDENT_UID_ATAM \
+            -t atam:$COMMIT_TAG \
             -f atam/Atam.Dockerfile atam \
             --cache-from type=local,src=/tmp/.buildx-cache \
-            --output type=docker,dest=AtamUbuntu-image.tar
+            --load
         env:
           STUDENT_PASS_ATAM: ${{ secrets.STUDENT_PASS_ATAM }}
           STUDENT_UID_ATAM: ${{ secrets.STUDENT_UID_ATAM }}
 
-      # --- Run and export Atam container ---
-      - name: Run and export Atam container
+      # --- Save atam image as .tar ---
+      - name: Save atam image to tar
+        run: docker save atam:$COMMIT_TAG -o AtamUbuntu-image.tar
+
+      # --- Export atam container to .tar ---
+      - name: Export atam container
         run: |
-          docker load -i AtamUbuntu-image.tar
-          container_id=$(docker run -t -d --name AtamUbuntuContainer atam /bin/bash)
+          container_id=$(docker run -t -d --name AtamUbuntuContainer atam:$COMMIT_TAG /bin/bash)
           docker export --output=AtamUbuntu-container.tar $container_id
 
-      # --- Build and export opsys-build image ---
-      - name: Build and save OpSys image to tar
+      # --- Build opsys image ---
+      - name: Build opsys image (and load into Docker)
         run: |
           docker buildx build \
             --builder default \
             --platform linux/amd64 \
             --secret id=student_pass_os,env=STUDENT_PASS_OS \
             --secret id=student_uid_os,env=STUDENT_UID_OS \
+            -t opsys:$COMMIT_TAG \
             -f OperatingSystems/OpSys.Dockerfile OperatingSystems \
             --cache-from type=local,src=/tmp/.buildx-cache \
-            --output type=docker,dest=OpSysUbuntu-image.tar
+            --load
         env:
           STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
           STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
 
-      # --- Run and export OpSys container ---
-      - name: Run and export OpSys container
+      # --- Save opsys image as .tar ---
+      - name: Save opsys image to tar
+        run: docker save opsys:$COMMIT_TAG -o OpSysUbuntu-image.tar
+
+      # --- Export opsys container to .tar ---
+      - name: Export opsys container
         run: |
-          docker load -i OpSysUbuntu-image.tar
-          container_id=$(docker run -t -d --name OpSysUbuntuContainer opsys /bin/bash)
+          container_id=$(docker run -t -d --name OpSysUbuntuContainer opsys:$COMMIT_TAG /bin/bash)
           docker export --output=OpSysUbuntu-container.tar $container_id
 
-      # --- Upload all tarballs to GitHub Release ---
+      # --- Upload all tars to GitHub Release ---
       - name: Upload all tars to Release
         uses: softprops/action-gh-release@v1
         with:
