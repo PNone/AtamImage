@@ -42,9 +42,10 @@ RUN cp ~/gcc_tmp/usr/share/man/man1/*.1.gz /usr/share/man/man1/
 RUN mandb
 RUN rm -rf ~/gcc_tmp
 
+
+RUN --mount=type=secret,id=STUDENT_PASS_ATAM,env=STUDENT_PASS_ATAM \
+    --mount=type=secret,id=STUDENT_UID_ATAM,env=STUDENT_UID_ATAM
 # RUN groupadd -g ${STUDENT_GROUP_UID_ATAM} ${STUDENT_GROUP_NAME_ATAM} && useradd -m -u ${STUDENT_UID_ATAM} -g ${STUDENT_GROUP_NAME_ATAM} student
-ARG STUDENT_PASS_ATAM
-ARG STUDENT_UID_ATAM
 RUN useradd -m -u ${STUDENT_UID_ATAM} -g root student
 RUN echo "student:${STUDENT_PASS_ATAM}" | chpasswd
 USER student

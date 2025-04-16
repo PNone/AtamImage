@@ -41,8 +41,8 @@ jobs:
           docker buildx build \
             --builder default \
             --platform linux/amd64 \
-            --build-arg STUDENT_PASS_ATAM=${{ secrets.STUDENT_PASS_ATAM }} \
-            --build-arg STUDENT_UID_ATAM=${{ secrets.STUDENT_UID_ATAM }} \
+            --secret id=STUDENT_PASS_ATAM,src=${{ secrets.STUDENT_PASS_ATAM }} \
+            --secret id=STUDENT_UID_ATAM,src=${{ secrets.STUDENT_UID_ATAM }} \
             -t $DOCKERHUB_USER/atam-build:$OP_SYS_TAG \
             -t $DOCKERHUB_USER/atam-build:$COMMIT_TAG \
             -f atam/Atam.Dockerfile atam \
@@ -56,8 +56,8 @@ jobs:
           docker buildx build \
             --builder default \
             --platform linux/amd64 \
-            --build-arg STUDENT_PASS_OS=${{ secrets.STUDENT_PASS_OS }} \
-            --build-arg STUDENT_UID_OS=${{ secrets.STUDENT_UID_OS }} \
+            --secret id=STUDENT_PASS_OS,src=${{ secrets.STUDENT_PASS_OS }} \
+            --secret id=STUDENT_UID_OS,src=${{ secrets.STUDENT_UID_OS }} \
             -t $DOCKERHUB_USER/opsys-build:$OP_SYS_TAG \
             -t $DOCKERHUB_USER/opsys-build:$COMMIT_TAG \
             -f OperatingSystems/OpSys.Dockerfile OperatingSystems \

@@ -58,8 +58,8 @@ RUN mandb
 RUN rm -rf ~/gcc_tmp
 
 
-ARG STUDENT_PASS_OS
-ARG STUDENT_UID_OS
+RUN --mount=type=secret,id=STUDENT_PASS_OS,env=STUDENT_PASS_OS \
+    --mount=type=secret,id=STUDENT_UID_OS,env=STUDENT_UID_OS
 RUN useradd -m -u ${STUDENT_UID_OS} -g root student
 RUN echo "student:${STUDENT_PASS_OS}" | chpasswd
 USER student
