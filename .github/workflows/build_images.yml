@@ -90,7 +90,8 @@ jobs:
           files: |
             AtamUbuntu-image.tar
             AtamUbuntu-container.tar
-            OpSysUbuntu-image.tar
             OpSysUbuntu-container.tar
+        #             OpSysUbuntu-image.tar
+
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
