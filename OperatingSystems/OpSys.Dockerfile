@@ -71,5 +71,8 @@ RUN --mount=type=secret,id=student_uid_os \
     STUDENT_PASS=$(cat /run/secrets/student_pass_os) && \
     useradd -m -u "$STUDENT_UID" -g root student && \
     echo "student:$STUDENT_PASS" | chpasswd
+
+# Add student to sudo group
+RUN usermod -aG sudo student
 USER student
 RUN echo 'alias gcc="gcc-7"' >> ~/.bashrc
