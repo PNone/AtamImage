@@ -2,6 +2,9 @@ FROM ubuntu:18.04
 RUN apt-get update
 COPY ./*.deb ./deb_files/
 RUN apt-get install -y less man-db
+# Timezone for tzdata
+ENV TZ=Asia/Jerusalem
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get install -y xfce4 xubuntu-desktop
 
 RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
