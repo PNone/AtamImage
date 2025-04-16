@@ -47,7 +47,7 @@ jobs:
             -t $DOCKERHUB_USER/atam-build:$COMMIT_TAG \
             -f atam/Atam.Dockerfile atam \
             --cache-from type=local,src=/tmp/.buildx-cache \
-            --cache-to type=local,dest=/tmp/.buildx-cache \
+            --load \
             --push
 
       # --- Build opsys-build image ---
@@ -62,7 +62,7 @@ jobs:
             -t $DOCKERHUB_USER/opsys-build:$COMMIT_TAG \
             -f OperatingSystems/OpSys.Dockerfile OperatingSystems \
             --cache-from type=local,src=/tmp/.buildx-cache \
-            --cache-to type=local,dest=/tmp/.buildx-cache \
+            --load \
             --push
 
       # --- Run and export AtamUbuntu container ---
