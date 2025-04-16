@@ -85,27 +85,27 @@ jobs:
 
       # --- Upload AtamUbuntu tarball ---
       - name: Upload AtamUbuntu image tarball
-         uses: actions/upload-artifact@v4
-         with:
+        uses: actions/upload-artifact@v4
+        with:
            name: AtamUbuntu-Image-Tarball
            path: AtamUbuntu-image.tar
       
       - name: Upload AtamUbuntu container tarball
-         uses: actions/upload-artifact@v4
-         with:
+        uses: actions/upload-artifact@v4
+        with:
            name: AtamUbuntu-Container-Tarball
            path: AtamUbuntu-container.tar
  
       # --- Upload OpSysUbuntu tarball ---
       - name: Upload OpSysUbuntu image tarball
-         uses: actions/upload-artifact@v4
-         with:
+        uses: actions/upload-artifact@v4
+        with:
            name: OpSysUbuntu-Image-Tarball
            path: OpSysUbuntu-image.tar
 
       - name: Upload OpSysUbuntu container tarball
-         uses: actions/upload-artifact@v4
-         with:
+        uses: actions/upload-artifact@v4
+        with:
            name: OpSysUbuntu-Container-Tarball
            path: OpSysUbuntu-container.tar
       # --- Upload all tars to GitHub Release ---
