@@ -83,6 +83,31 @@ jobs:
           container_id=$(docker run -t -d --name OpSysUbuntuContainer opsys:$COMMIT_TAG /bin/bash)
           docker export --output=OpSysUbuntu-container.tar $container_id
 
+      # --- Upload AtamUbuntu tarball ---
+      - name: Upload AtamUbuntu image tarball
+         uses: actions/upload-artifact@v4
+         with:
+           name: AtamUbuntu-Image-Tarball
+           path: AtamUbuntu-image.tar
+      
+      - name: Upload AtamUbuntu container tarball
+         uses: actions/upload-artifact@v4
+         with:
+           name: AtamUbuntu-Container-Tarball
+           path: AtamUbuntu-container.tar
+ 
+      # --- Upload OpSysUbuntu tarball ---
+      - name: Upload OpSysUbuntu image tarball
+         uses: actions/upload-artifact@v4
+         with:
+           name: OpSysUbuntu-Image-Tarball
+           path: OpSysUbuntu-image.tar
+
+      - name: Upload OpSysUbuntu container tarball
+         uses: actions/upload-artifact@v4
+         with:
+           name: OpSysUbuntu-Container-Tarball
+           path: OpSysUbuntu-container.tar
       # --- Upload all tars to GitHub Release ---
       - name: Upload all tars to Release
         uses: softprops/action-gh-release@v1
@@ -90,7 +115,7 @@ jobs:
           files: |
             AtamUbuntu-image.tar
             AtamUbuntu-container.tar
-            OpSysUbuntu-container.tar
+        #    OpSysUbuntu-container.tar
         #             OpSysUbuntu-image.tar
 
         env:
