@@ -7,7 +7,7 @@ ARG TZ=Asia/Jerusalem
 # ARG DEBIAN_FRONTEND=noninteractive
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Keyboard layout for keyboard-configuration package
-ARG XKBLAYOUT=he,us
+ARG XKBLAYOUT=il
 RUN apt-get install -y xfce4 xubuntu-desktop
 
 RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
