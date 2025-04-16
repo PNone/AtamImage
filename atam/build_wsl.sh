@@ -5,4 +5,4 @@ docker export --output=AtamUbuntu.tar $container_id
 wsl.exe --import AtamUbuntu . AtamUbuntu.tar
 
 # Run machine using: 
-# wsl -d AtamUbuntu
+# wsl -d AtamUbuntu --user student

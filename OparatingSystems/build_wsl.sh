@@ -5,4 +5,4 @@ docker export --output=OpSysUbuntu.tar $container_id
 wsl.exe --import OpSysUbuntu . OpSysUbuntu.tar
 
 # Run machine using: 
-# wsl -d OpSysUbuntu
+# wsl -d OpSysUbuntu --user student
