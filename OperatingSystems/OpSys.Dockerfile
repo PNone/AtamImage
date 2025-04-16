@@ -58,9 +58,12 @@ RUN mandb
 RUN rm -rf ~/gcc_tmp
 
 
-RUN --mount=type=secret,id=STUDENT_PASS_OS,env=STUDENT_PASS_OS \
-    --mount=type=secret,id=STUDENT_UID_OS,env=STUDENT_UID_OS
-RUN useradd -m -u ${STUDENT_UID_OS} -g root student
-RUN echo "student:${STUDENT_PASS_OS}" | chpasswd
+# Securely create student user
+RUN --mount=type=secret,id=student_uid_os \
+    --mount=type=secret,id=student_pass_os \
+    STUDENT_UID=$(cat /run/secrets/student_uid_os) && \
+    STUDENT_PASS=$(cat /run/secrets/student_pass_os) && \
+    useradd -m -u "$STUDENT_UID" -g root student && \
+    echo "student:$STUDENT_PASS" | chpasswd
 USER student
 RUN echo 'alias gcc="gcc-7"' >> ~/.bashrc

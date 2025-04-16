@@ -30,12 +30,14 @@ RUN cp ~/bsdmainutils_tmp/usr/share/man/man1/*.1.gz /usr/share/man/man1/
 RUN mandb
 RUN rm -rf ~/bsdmainutils_tmp
 
+# Install cpp-7 manual
 RUN mkdir ~/cpp_tmp
 RUN dpkg-deb -x ./deb_files/cpp-7_7.4.0-1ubuntu1~18.04.1_amd64.deb ~/cpp_tmp
 RUN cp ~/cpp_tmp/usr/share/man/man1/*.1.gz /usr/share/man/man1/
 RUN mandb
 RUN rm -rf ~/cpp_tmp
 
+# Install gcc-7 manual
 RUN mkdir ~/gcc_tmp
 RUN dpkg-deb -x ./deb_files/gcc-7_7.4.0-1ubuntu1~18.04.1_amd64.deb ~/gcc_tmp
 RUN cp ~/gcc_tmp/usr/share/man/man1/*.1.gz /usr/share/man/man1/
@@ -43,10 +45,14 @@ RUN mandb
 RUN rm -rf ~/gcc_tmp
 
 
-RUN --mount=type=secret,id=STUDENT_PASS_ATAM,env=STUDENT_PASS_ATAM \
-    --mount=type=secret,id=STUDENT_UID_ATAM,env=STUDENT_UID_ATAM
 # RUN groupadd -g ${STUDENT_GROUP_UID_ATAM} ${STUDENT_GROUP_NAME_ATAM} && useradd -m -u ${STUDENT_UID_ATAM} -g ${STUDENT_GROUP_NAME_ATAM} student
-RUN useradd -m -u ${STUDENT_UID_ATAM} -g root student
-RUN echo "student:${STUDENT_PASS_ATAM}" | chpasswd
+
+# Create user using secrets
+RUN --mount=type=secret,id=student_uid_atam \
+    --mount=type=secret,id=student_pass_atam \
+    STUDENT_UID=$(cat /run/secrets/student_uid_atam) && \
+    STUDENT_PASS=$(cat /run/secrets/student_pass_atam) && \
+    useradd -m -u "$STUDENT_UID" -g root student && \
+    echo "student:$STUDENT_PASS" | chpasswd
 USER student
 RUN echo 'alias gcc="gcc-7"' >> ~/.bashrc
