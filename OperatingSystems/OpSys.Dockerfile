@@ -6,8 +6,18 @@ RUN apt-get install -y less man-db
 ARG TZ=Asia/Jerusalem
 # ARG DEBIAN_FRONTEND=noninteractive
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Keyboard layout for keyboard-configuration package
-ARG XKBLAYOUT=il
+# Preseed keyboard-configuration
+RUN echo 'keyboard-configuration  keyboard-configuration/modelcode       select  pc105' > /tmp/kbd.cfg && \
+    echo 'keyboard-configuration  keyboard-configuration/layout          select  Hebrew' >> /tmp/kbd.cfg && \
+    echo 'keyboard-configuration  keyboard-configuration/layoutcode      select  il' >> /tmp/kbd.cfg && \
+    echo 'keyboard-configuration  keyboard-configuration/variant         select  ' >> /tmp/kbd.cfg && \
+    echo 'keyboard-configuration  keyboard-configuration/variantcode     select  ' >> /tmp/kbd.cfg && \
+    echo 'keyboard-configuration  keyboard-configuration/optionscode     select  grp:alt_shift_toggle' >> /tmp/kbd.cfg && \
+    echo 'keyboard-configuration  keyboard-configuration/toggle          select  Alt+Shift' >> /tmp/kbd.cfg && \
+    echo 'keyboard-configuration  keyboard-configuration/xkb-keymap      select  il,us' >> /tmp/kbd.cfg && \
+    debconf-set-selections /tmp/kbd.cfg && rm /tmp/kbd.cfg
 RUN apt-get install -y xfce4 xubuntu-desktop
 
 RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
