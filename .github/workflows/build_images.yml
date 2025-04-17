@@ -51,6 +51,7 @@ jobs:
         with:
           driver: docker-container
           install: true
+          use: false  # We'll manually create and use the builder
 
       - name: Create and use custom builder
         run: |
