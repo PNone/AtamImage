@@ -20,10 +20,10 @@ RUN echo 'keyboard-configuration  keyboard-configuration/modelcode       select 
     debconf-set-selections /tmp/kbd.cfg && rm /tmp/kbd.cfg
 RUN apt-get install -y xfce4 xubuntu-desktop
 
-RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
-RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg-extra_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
-RUN apt-get install -y ./deb_files/chromium-browser_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
-RUN apt-get install -y ./deb_files/chromium-browser-l10n_86.0.4240.75-0ubuntu0.18.04.1_all.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg-extra_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/chromium-browser_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/chromium-browser-l10n_86.0.4240.75-0ubuntu0.18.04.1_all.deb --allow-downgrades
 
 RUN apt-get install -y ./deb_files/geany_1.32-2_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/geany-common_1.32-2_all.deb --allow-downgrades
@@ -76,10 +76,15 @@ RUN rm -rf ~/gcc_tmp
 
 # Securely create student user
 RUN --mount=type=secret,id=student_uid_os \
+    --mount=type=secret,id=student_group_uid_os \
+    --mount=type=secret,id=student_group_name_os \
     --mount=type=secret,id=student_pass_os \
     STUDENT_UID=$(cat /run/secrets/student_uid_os) && \
+    STUDENT_GROUP_UID=$(cat /run/secrets/student_group_uid_os) && \
+    STUDENT_GROUP_NAME=$(cat /run/secrets/student_group_name_os) && \
     STUDENT_PASS=$(cat /run/secrets/student_pass_os) && \
-    useradd -m -u "$STUDENT_UID" -g root student && \
+    groupadd -g "$STUDENT_GROUP_UID" "$STUDENT_GROUP_NAME" && \
+    useradd -m -u "$STUDENT_UID" -g "$STUDENT_GROUP_NAME" student && \
     echo "student:$STUDENT_PASS" | chpasswd
 
 # Add student to sudo group

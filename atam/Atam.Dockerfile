@@ -49,10 +49,15 @@ RUN rm -rf ~/gcc_tmp
 
 # Create user using secrets
 RUN --mount=type=secret,id=student_uid_atam \
+    --mount=type=secret,id=student_group_uid_atam \
+    --mount=type=secret,id=student_group_name_atam \
     --mount=type=secret,id=student_pass_atam \
     STUDENT_UID=$(cat /run/secrets/student_uid_atam) && \
+    STUDENT_GROUP_UID=$(cat /run/secrets/student_group_uid_atam) && \
+    STUDENT_GROUP_NAME=$(cat /run/secrets/student_group_name_atam) && \
     STUDENT_PASS=$(cat /run/secrets/student_pass_atam) && \
-    useradd -m -u "$STUDENT_UID" -g root student && \
+    groupadd -g "$STUDENT_GROUP_UID" "$STUDENT_GROUP_NAME" && \
+    useradd -m -u "$STUDENT_UID" -g "$STUDENT_GROUP_NAME" student && \
     echo "student:$STUDENT_PASS" | chpasswd
 
 # Add student to sudo group

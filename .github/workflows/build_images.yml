@@ -49,6 +49,8 @@ jobs:
             --builder mybuilder \
             --platform linux/amd64 \
             --secret id=student_pass_atam,env=STUDENT_PASS_ATAM \
+            --secret id=student_group_uid_atam,env=STUDENT_GROUP_UID_ATAM \
+            --secret id=student_group_name_atam,env=STUDENT_GROUP_NAME_ATAM \
             --secret id=student_uid_atam,env=STUDENT_UID_ATAM \
             -t atam:$COMMIT_TAG \
             -f atam/Atam.Dockerfile atam \
@@ -57,6 +59,8 @@ jobs:
             --load
         env:
           STUDENT_PASS_ATAM: ${{ secrets.STUDENT_PASS_ATAM }}
+          STUDENT_GROUP_NAME_ATAM: ${{ secrets.STUDENT_GROUP_NAME_ATAM }}
+          STUDENT_GROUP_UID_ATAM: ${{ secrets.STUDENT_GROUP_UID_ATAM }}
           STUDENT_UID_ATAM: ${{ secrets.STUDENT_UID_ATAM }}
 
       # Build opsys image
@@ -66,6 +70,8 @@ jobs:
             --builder mybuilder \
             --platform linux/amd64 \
             --secret id=student_pass_os,env=STUDENT_PASS_OS \
+            --secret id=student_group_uid_os,env=STUDENT_GROUP_UID_OS \
+            --secret id=student_group_name_os,env=STUDENT_GROUP_NAME_OS \
             --secret id=student_uid_os,env=STUDENT_UID_OS \
             -t opsys:$COMMIT_TAG \
             -f OperatingSystems/OpSys.Dockerfile OperatingSystems \
@@ -74,6 +80,8 @@ jobs:
             --load
         env:
           STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
+          STUDENT_GROUP_NAME_OS: ${{ secrets.STUDENT_GROUP_NAME_OS }}
+          STUDENT_GROUP_UID_OS: ${{ secrets.STUDENT_GROUP_UID_OS }}
           STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
 
       # Save image tarballs
