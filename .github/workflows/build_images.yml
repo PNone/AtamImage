@@ -20,8 +20,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx with containerd driver
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: containerd  # Use containerd driver for cache support
 
       # --- Restore Docker Layer Cache ---
       - name: Restore Docker layer cache
