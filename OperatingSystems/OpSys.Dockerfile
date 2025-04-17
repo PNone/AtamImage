@@ -85,6 +85,9 @@ RUN apt-get install -y ./deb_files/bsdmainutils_11.1.2ubuntu1_amd64.deb --allow-
 # RUN apt-get install -y ./deb_files/libqt5widgets5_5.11.2+dfsg-6ubuntu1_amd64.deb --allow-downgrades
 # RUN apt-get install -y ./deb_files/sasm_3.10.1-1_amd64.deb --allow-downgrades
 
+# Gui support when used as a wsl distribution
+RUN apt-get install -y x11-utils x11-xserver-utils
+
 # Delete deb_files to save on space
 RUN rm -rf ./deb_files
 
@@ -104,4 +107,11 @@ RUN --mount=type=secret,id=student_uid_os \
 # Add student to sudo group
 RUN usermod -aG sudo student
 USER student
+
+# Display settings for wsl gui support
+RUN echo 'export DISPLAY=$(grep -oP "(?<=nameserver ).+" /etc/resolv.conf):0' >> /home/student/.bashrc && \
+    echo 'export LIBGL_ALWAYS_INDIRECT=1' >> /home/student/.bashrc && \
+#    echo 'startxfce4 &' >> /home/student/.bashrc
+# last line is for auto launching the gui
+
 RUN echo 'alias gcc="gcc-7"' >> ~/.bashrc
