@@ -1,4 +1,4 @@
-name: Build and Export Docker Images and Containers on Tag
+name: Build and Export Docker Images on Tag
 
 on:
   push:
@@ -31,8 +31,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      # --- Build and export atam-build image ---
-      - name: Build and save Atam image to tar
+      # --- Build atam image ---
+      - name: Build atam image
         run: |
           docker buildx build \
             --builder default \
@@ -47,18 +47,8 @@ jobs:
           STUDENT_PASS_ATAM: ${{ secrets.STUDENT_PASS_ATAM }}
           STUDENT_UID_ATAM: ${{ secrets.STUDENT_UID_ATAM }}
 
-      # --- Save atam image as .tar ---
-      - name: Save atam image to tar
-        run: docker save atam:$COMMIT_TAG -o AtamUbuntu-image.tar
-
-      # --- Export atam container to .tar ---
-      - name: Export atam container
-        run: |
-          container_id=$(docker run -t -d --name AtamUbuntuContainer atam:$COMMIT_TAG /bin/bash)
-          docker export --output=AtamUbuntu-container.tar $container_id
-
       # --- Build opsys image ---
-      - name: Build opsys image (and load into Docker)
+      - name: Build opsys image
         run: |
           docker buildx build \
             --builder default \
@@ -73,50 +63,38 @@ jobs:
           STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
           STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
 
-      # --- Save opsys image as .tar ---
+      # --- Save images to tar ---
+      - name: Save atam image to tar
+        run: docker save atam:$COMMIT_TAG -o AtamUbuntu-${OP_SYS_TAG}.tar
+
       - name: Save opsys image to tar
-        run: docker save opsys:$COMMIT_TAG -o OpSysUbuntu-image.tar
+        run: docker save opsys:$COMMIT_TAG -o OpSysUbuntu-${OP_SYS_TAG}.tar
 
-      # --- Export opsys container to .tar ---
-      - name: Export opsys container
+      # --- Compress the tarballs ---
+      - name: Compress tarballs
         run: |
-          container_id=$(docker run -t -d --name OpSysUbuntuContainer opsys:$COMMIT_TAG /bin/bash)
-          docker export --output=OpSysUbuntu-container.tar $container_id
+          gzip -9 AtamUbuntu-${OP_SYS_TAG}.tar
+          gzip -9 OpSysUbuntu-${OP_SYS_TAG}.tar
 
-      # --- Upload AtamUbuntu tarball ---
-      - name: Upload AtamUbuntu image tarball
+      # --- Upload compressed artifacts ---
+      - name: Upload AtamUbuntu image
         uses: actions/upload-artifact@v4
         with:
-           name: AtamUbuntu-Image-Tarball
-           path: AtamUbuntu-image.tar
-      
-      - name: Upload AtamUbuntu container tarball
-        uses: actions/upload-artifact@v4
-        with:
-           name: AtamUbuntu-Container-Tarball
-           path: AtamUbuntu-container.tar
- 
-      # --- Upload OpSysUbuntu tarball ---
-      - name: Upload OpSysUbuntu image tarball
-        uses: actions/upload-artifact@v4
-        with:
-           name: OpSysUbuntu-Image-Tarball
-           path: OpSysUbuntu-image.tar
+          name: AtamUbuntu-Image-${{ env.OP_SYS_TAG }}
+          path: AtamUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
 
-      - name: Upload OpSysUbuntu container tarball
+      - name: Upload OpSysUbuntu image
         uses: actions/upload-artifact@v4
         with:
-           name: OpSysUbuntu-Container-Tarball
-           path: OpSysUbuntu-container.tar
-      # --- Upload all tars to GitHub Release ---
-      - name: Upload all tars to Release
+          name: OpSysUbuntu-Image-${{ env.OP_SYS_TAG }}
+          path: OpSysUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
+
+      # --- Upload to GitHub Release ---
+      - name: Upload images to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            AtamUbuntu-image.tar
-            AtamUbuntu-container.tar
-            OpSysUbuntu-container.tar
-            OpSysUbuntu-image.tar
-
+            AtamUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
+            OpSysUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
