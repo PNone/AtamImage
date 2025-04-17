@@ -66,53 +66,38 @@ jobs:
           STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
           STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
 
-      # --- Save image tarballs ---
-      - name: Save image tarballs
+      # --- Save images to tar files ---
+      - name: Save images to tar
         run: |
-          docker save atam:$COMMIT_TAG -o AtamUbuntu-image-${OP_SYS_TAG}.tar
-          docker save opsys:$COMMIT_TAG -o OpSysUbuntu-image-${OP_SYS_TAG}.tar
+          docker save atam:$COMMIT_TAG -o AtamUbuntu-${OP_SYS_TAG}.tar
+          docker save opsys:$COMMIT_TAG -o OpSysUbuntu-${OP_SYS_TAG}.tar
 
-      # --- Export rootfs tarballs from running containers ---
-      - name: Export rootfs tarballs
-        run: |
-          container_id_atam=$(docker run -t -d --name AtamUbuntuContainer atam:$COMMIT_TAG /bin/bash)
-          docker export --output=AtamUbuntu-rootfs-${OP_SYS_TAG}.tar $container_id_atam
-
-          container_id_opsys=$(docker run -t -d --name OpSysUbuntuContainer opsys:$COMMIT_TAG /bin/bash)
-          docker export --output=OpSysUbuntu-rootfs-${OP_SYS_TAG}.tar $container_id_opsys
-
-      # --- Compress all tarballs ---
+      # --- Compress tarballs ---
       - name: Compress tarballs
         run: |
-          gzip -9 AtamUbuntu-image-${OP_SYS_TAG}.tar
-          gzip -9 AtamUbuntu-rootfs-${OP_SYS_TAG}.tar
-          gzip -9 OpSysUbuntu-image-${OP_SYS_TAG}.tar
-          gzip -9 OpSysUbuntu-rootfs-${OP_SYS_TAG}.tar
+          gzip -9 AtamUbuntu-${OP_SYS_TAG}.tar
+          gzip -9 OpSysUbuntu-${OP_SYS_TAG}.tar
 
-      # --- Upload all tarballs as artifacts ---
+      # --- Upload tarballs to GitHub artifacts ---
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Docker-Tarballs-${{ env.OP_SYS_TAG }}
+          name: Docker-Images-${{ env.OP_SYS_TAG }}
           path: |
-            AtamUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            AtamUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
+            AtamUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
+            OpSysUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
 
       # --- Upload tarballs to GitHub Release ---
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            AtamUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            AtamUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
+            AtamUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
+            OpSysUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
 
-      # --- Save Docker Layer Cache (optional but recommended) ---
+      # --- Save Docker Layer Cache ---
       - name: Save Docker layer cache
         uses: actions/cache/save@v3
         if: always()

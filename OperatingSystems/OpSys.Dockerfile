@@ -86,3 +86,8 @@ RUN --mount=type=secret,id=student_uid_os \
 RUN usermod -aG sudo student
 USER student
 RUN echo 'alias gcc="gcc-7"' >> ~/.bashrc
+
+# For wsl
+SHELL ["/bin/bash", "-c"]
+CMD ["/bin/bash"]
+
