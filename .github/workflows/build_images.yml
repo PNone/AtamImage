@@ -21,13 +21,13 @@ jobs:
         uses: actions/checkout@v4
 
       # Set up Buildx with docker-container driver for caching support
-      - name: Set up persistent Buildx builder
+      - name: Set up Buildx with docker-container driver
         uses: docker/setup-buildx-action@v3
         with:
+          buildkitd-flags: --debug
           install: true
           driver: docker-container
-          driver-opts: image=moby/buildkit:latest
-          buildkitd-flags: --debug
+          name: mybuilder
           use: true
 
       # Restore Docker layer cache (global key)
@@ -43,7 +43,7 @@ jobs:
       - name: Build atam image
         run: |
           docker buildx build \
-            --builder default \
+            --builder mybuilder \
             --platform linux/amd64 \
             --secret id=student_pass_atam,env=STUDENT_PASS_ATAM \
             --secret id=student_uid_atam,env=STUDENT_UID_ATAM \
@@ -60,7 +60,7 @@ jobs:
       - name: Build opsys image
         run: |
           docker buildx build \
-            --builder default \
+            --builder mybuilder \
             --platform linux/amd64 \
             --secret id=student_pass_os,env=STUDENT_PASS_OS \
             --secret id=student_uid_os,env=STUDENT_UID_OS \
