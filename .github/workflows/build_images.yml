@@ -21,14 +21,17 @@ jobs:
         uses: actions/checkout@v4
 
       # Set up Buildx with docker-container driver for caching support
-      - name: Set up Buildx with docker-container driver
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          buildkitd-flags: --debug
-          install: true
           driver: docker-container
-          name: mybuilder
-          use: true
+          install: true
+          use: false  # We'll manually create and use the builder
+
+      - name: Create and use custom builder
+        run: |
+          docker buildx create --name mybuilder --driver docker-container --use
+          docker buildx inspect --bootstrap
 
       # Restore Docker layer cache (global key)
       - name: Restore Docker layer cache
