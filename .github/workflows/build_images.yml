@@ -82,36 +82,36 @@ jobs:
       # Save image tarballs
       - name: Save ${{ matrix.target.name }} image tarball
         run: |
-          docker save ${{ matrix.target.name }}:${{ env.COMMIT_TAG }} -o ${{ matrix.target.name }}Ubuntu-image-${OP_SYS_TAG}.tar
+          docker save ${{ matrix.target.name }}:${{ env.COMMIT_TAG }} -o ${{ matrix.target.name | title }}Ubuntu-image-${OP_SYS_TAG}.tar
 
       # Export rootfs tarballs from containers
       - name: Export ${{ matrix.target.name }} rootfs tarball
         run: |
           container_id=$(docker run -t -d --name ${{ matrix.target.name }}Container ${{ matrix.target.name }}:${{ env.COMMIT_TAG }} /bin/bash)
-          docker export --output=${{ matrix.target.name }}Ubuntu-rootfs-${OP_SYS_TAG}.tar $container_id
+          docker export --output=${{ matrix.target.name | title }}Ubuntu-rootfs-${OP_SYS_TAG}.tar $container_id
 
       # Compress all tarballs
       - name: Compress ${{ matrix.target.name }} tarballs
         run: |
-          gzip -9 ${{ matrix.target.name }}Ubuntu-image-${OP_SYS_TAG}.tar
-          gzip -9 ${{ matrix.target.name }}Ubuntu-rootfs-${OP_SYS_TAG}.tar
+          gzip -9 ${{ matrix.target.name | title }}Ubuntu-image-${OP_SYS_TAG}.tar
+          gzip -9 ${{ matrix.target.name | title }}Ubuntu-rootfs-${OP_SYS_TAG}.tar
 
       # Upload tarballs as artifacts
       - name: Upload ${{ matrix.target.name }} artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Docker-${{ matrix.target.name }}-${{ env.OP_SYS_TAG }}
+          name: Docker-${{ matrix.target.name | title }}-${{ env.OP_SYS_TAG }}
           path: |
-            ${{ matrix.target.name }}Ubuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            ${{ matrix.target.name }}Ubuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
+            ${{ matrix.target.name | title }}Ubuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            ${{ matrix.target.name | title }}Ubuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
 
       # Upload tarballs to GitHub Release
       - name: Upload ${{ matrix.target.name }} to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ matrix.target.name }}Ubuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            ${{ matrix.target.name }}Ubuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
+            ${{ matrix.target.name | title }}Ubuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            ${{ matrix.target.name | title }}Ubuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
 
       # Save Docker layer cache
       - name: Save Docker layer cache
