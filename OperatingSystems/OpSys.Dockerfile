@@ -1,5 +1,9 @@
 FROM ubuntu:18.04
 RUN apt-get update
+
+# Do not remove man pages
+RUN sed -i 's:^path-exclude=/usr/share/man:#path-exclude=/usr/share/man:' \
+    /etc/dpkg/dpkg.cfg.d/excludes
 COPY ./*.deb ./deb_files/
 RUN apt-get install -y less man-db
 # Timezone for tzdata
@@ -81,18 +85,8 @@ RUN apt-get install -y ./deb_files/bsdmainutils_11.1.2ubuntu1_amd64.deb --allow-
 # RUN apt-get install -y ./deb_files/libqt5widgets5_5.11.2+dfsg-6ubuntu1_amd64.deb --allow-downgrades
 # RUN apt-get install -y ./deb_files/sasm_3.10.1-1_amd64.deb --allow-downgrades
 
-# Install deb manuals, as they are not properly installed for some reason
-RUN for deb in ./deb_files/*.deb; do \
-      tmpdir=$(mktemp -d); \
-      dpkg-deb -x "$deb" "$tmpdir"; \
-      for section in "$tmpdir/usr/share/man/man"*; do \
-        if [ -d "$section" ]; then \
-          cp "$section"/*.gz "/usr/share/man/$(basename "$section")/" 2>/dev/null || true; \
-        fi; \
-      done; \
-      rm -rf "$tmpdir"; \
-    done && mandb
-
+# Delete deb_files to save on space
+RUN rm -rf ./deb_files
 
 # Securely create student user
 RUN --mount=type=secret,id=student_uid_os \
