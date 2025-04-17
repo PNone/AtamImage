@@ -23,11 +23,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
+      # --- Restore Docker Layer Cache ---
+      - name: Restore Docker layer cache
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-global
           restore-keys: |
             ${{ runner.os }}-buildx-
 
@@ -42,6 +43,7 @@ jobs:
             -t atam:$COMMIT_TAG \
             -f atam/Atam.Dockerfile atam \
             --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
             --load
         env:
           STUDENT_PASS_ATAM: ${{ secrets.STUDENT_PASS_ATAM }}
@@ -58,43 +60,62 @@ jobs:
             -t opsys:$COMMIT_TAG \
             -f OperatingSystems/OpSys.Dockerfile OperatingSystems \
             --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
             --load
         env:
           STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
           STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
 
-      # --- Save images to tar ---
-      - name: Save atam image to tar
-        run: docker save atam:$COMMIT_TAG -o AtamUbuntu-${OP_SYS_TAG}.tar
+      # --- Save image tarballs ---
+      - name: Save image tarballs
+        run: |
+          docker save atam:$COMMIT_TAG -o AtamUbuntu-image-${OP_SYS_TAG}.tar
+          docker save opsys:$COMMIT_TAG -o OpSysUbuntu-image-${OP_SYS_TAG}.tar
 
-      - name: Save opsys image to tar
-        run: docker save opsys:$COMMIT_TAG -o OpSysUbuntu-${OP_SYS_TAG}.tar
+      # --- Export rootfs tarballs from running containers ---
+      - name: Export rootfs tarballs
+        run: |
+          container_id_atam=$(docker run -t -d --name AtamUbuntuContainer atam:$COMMIT_TAG /bin/bash)
+          docker export --output=AtamUbuntu-rootfs-${OP_SYS_TAG}.tar $container_id_atam
 
-      # --- Compress the tarballs ---
+          container_id_opsys=$(docker run -t -d --name OpSysUbuntuContainer opsys:$COMMIT_TAG /bin/bash)
+          docker export --output=OpSysUbuntu-rootfs-${OP_SYS_TAG}.tar $container_id_opsys
+
+      # --- Compress all tarballs ---
       - name: Compress tarballs
         run: |
-          gzip -9 AtamUbuntu-${OP_SYS_TAG}.tar
-          gzip -9 OpSysUbuntu-${OP_SYS_TAG}.tar
+          gzip -9 AtamUbuntu-image-${OP_SYS_TAG}.tar
+          gzip -9 AtamUbuntu-rootfs-${OP_SYS_TAG}.tar
+          gzip -9 OpSysUbuntu-image-${OP_SYS_TAG}.tar
+          gzip -9 OpSysUbuntu-rootfs-${OP_SYS_TAG}.tar
 
-      # --- Upload compressed artifacts ---
-      - name: Upload AtamUbuntu image
+      # --- Upload all tarballs as artifacts ---
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AtamUbuntu-Image-${{ env.OP_SYS_TAG }}
-          path: AtamUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
+          name: Docker-Tarballs-${{ env.OP_SYS_TAG }}
+          path: |
+            AtamUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            AtamUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
+            OpSysUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            OpSysUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
 
-      - name: Upload OpSysUbuntu image
-        uses: actions/upload-artifact@v4
-        with:
-          name: OpSysUbuntu-Image-${{ env.OP_SYS_TAG }}
-          path: OpSysUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
-
-      # --- Upload to GitHub Release ---
-      - name: Upload images to Release
+      # --- Upload tarballs to GitHub Release ---
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            AtamUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-${{ env.OP_SYS_TAG }}.tar.gz
+            AtamUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            AtamUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
+            OpSysUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            OpSysUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+
+      # --- Save Docker Layer Cache (optional but recommended) ---
+      - name: Save Docker layer cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-global
