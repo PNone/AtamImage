@@ -85,6 +85,8 @@ RUN apt-get install -y ./deb_files/bsdmainutils_11.1.2ubuntu1_amd64.deb --allow-
 # RUN apt-get install -y ./deb_files/libqt5widgets5_5.11.2+dfsg-6ubuntu1_amd64.deb --allow-downgrades
 # RUN apt-get install -y ./deb_files/sasm_3.10.1-1_amd64.deb --allow-downgrades
 
+# Delete deb_files to save on space
+RUN rm -rf ./deb_files
 
 # Securely create student user
 RUN --mount=type=secret,id=student_uid_os \

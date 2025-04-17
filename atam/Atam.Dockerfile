@@ -28,6 +28,8 @@ RUN apt-get install -y ./deb_files/gdb_8.1-0ubuntu3_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/gdb-doc_8.1-0ubuntu3_all.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/bsdmainutils_11.1.2ubuntu1_amd64.deb --allow-downgrades
 
+# Delete deb_files to save on space
+RUN rm -rf ./deb_files
 
 # RUN groupadd -g ${STUDENT_GROUP_UID_ATAM} ${STUDENT_GROUP_NAME_ATAM} && useradd -m -u ${STUDENT_UID_ATAM} -g ${STUDENT_GROUP_NAME_ATAM} student
 
