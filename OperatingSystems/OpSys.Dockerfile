@@ -110,9 +110,7 @@ USER student
 
 # Display settings for wsl gui support
 RUN echo 'export DISPLAY=$(grep -oP "(?<=nameserver ).+" /etc/resolv.conf):0' >> /home/student/.bashrc && \
-    echo 'export LIBGL_ALWAYS_INDIRECT=1' >> /home/student/.bashrc
-
-#    && \
+    echo 'export LIBGL_ALWAYS_INDIRECT=1' >> /home/student/.bashrc && \
 #    echo 'startxfce4 &' >> /home/student/.bashrc
 # last line is for auto launching the gui
 
