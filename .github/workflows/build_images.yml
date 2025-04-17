@@ -15,10 +15,12 @@ jobs:
             dockerfile: atam/Atam.Dockerfile
             context: atam
             name_upper: ATAM
+            name_lower: atam
           - name: opsys
             dockerfile: OperatingSystems/OpSys.Dockerfile
             context: OperatingSystems
             name_upper: OS
+            name_lower: os
 
     env:
       OP_SYS_TAG: ${{ github.ref_name }}
@@ -69,10 +71,10 @@ jobs:
           docker buildx build \
             --builder mybuilder \
             --platform linux/amd64 \
-            --secret id=student_pass_${{ matrix.target.name }},env=STUDENT_PASS_${{ matrix.target.name_upper }} \
-            --secret id=student_group_uid_${{ matrix.target.name }},env=STUDENT_GROUP_UID_${{ matrix.target.name_upper }} \
-            --secret id=student_group_name_${{ matrix.target.name }},env=STUDENT_GROUP_NAME_${{ matrix.target.name_upper }} \
-            --secret id=student_uid_${{ matrix.target.name }},env=STUDENT_UID_${{ matrix.target.name_upper }} \
+            --secret id=student_pass_${{ matrix.target.name_lower }},env=STUDENT_PASS_${{ matrix.target.name_upper }} \
+            --secret id=student_group_uid_${{ matrix.target.name_lower }},env=STUDENT_GROUP_UID_${{ matrix.target.name_upper }} \
+            --secret id=student_group_name_${{ matrix.target.name_lower }},env=STUDENT_GROUP_NAME_${{ matrix.target.name_upper }} \
+            --secret id=student_uid_${{ matrix.target.name_lower }},env=STUDENT_UID_${{ matrix.target.name_upper }} \
             -t ${{ matrix.target.name }}:${{ env.COMMIT_TAG }} \
             -f ${{ matrix.target.dockerfile }} ${{ matrix.target.context }} \
             --cache-from type=local,src=/tmp/.buildx-cache \
