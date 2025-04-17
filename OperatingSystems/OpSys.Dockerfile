@@ -20,15 +20,18 @@ RUN echo 'keyboard-configuration  keyboard-configuration/modelcode       select 
     debconf-set-selections /tmp/kbd.cfg && rm /tmp/kbd.cfg
 RUN apt-get install -y xfce4 xubuntu-desktop
 
+# Commented out to save a bit on space
 # RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
 # RUN apt-get install -y ./deb_files/chromium-codecs-ffmpeg-extra_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
 # RUN apt-get install -y ./deb_files/chromium-browser_86.0.4240.75-0ubuntu0.18.04.1_amd64.deb --allow-downgrades
 # RUN apt-get install -y ./deb_files/chromium-browser-l10n_86.0.4240.75-0ubuntu0.18.04.1_all.deb --allow-downgrades
 
+# Code Editors
 RUN apt-get install -y ./deb_files/geany_1.32-2_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/geany-common_1.32-2_all.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/codeblocks_16.01+dfsg-2.1_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/codeblocks-common_16.01+dfsg-2.1_all.deb --allow-downgrades
+
 RUN apt-get install -y ./deb_files/make_4.1-9.1ubuntu1_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/binutils-common_2.30-21ubuntu1~18.04.4_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/libbinutils_2.30-21ubuntu1~18.04.4_amd64.deb --allow-downgrades
@@ -50,28 +53,45 @@ RUN apt-get install -y ./deb_files/gcc_7.4.0-1ubuntu2.3_amd64.deb --allow-downgr
 RUN apt-get install -y ./deb_files/gcc-doc_7.4.0-1ubuntu2.3_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/gcc-7_7.5.0-3ubuntu1~18.04_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/gcc-7-doc_7.5.0-3ubuntu1~18.04_all.deb --allow-downgrades
+
+RUN apt-get install -y ./deb_files/g++_7.4.0-1ubuntu2.3_amd64.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/g++-7_7.5.0-3ubuntu1~18.04_amd64.deb --allow-downgrades
+
+RUN apt-get install -y ./deb_files/vim-common_8.0.1453-1ubuntu1.4_all.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/vim-runtime_8.0.1453-1ubuntu1.4_all.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/vim_8.0.1453-1ubuntu1.4_amd64.deb --allow-downgrades
+RUN apt-get install -y ./deb_files/vim-tiny_8.0.1453-1ubuntu1.4_amd64.deb --allow-downgrades
+
+RUN apt-get install -y ./deb_files/qemu-system-x86_2.11+dfsg-1ubuntu7.32_amd64.deb --allow-downgrades
+
 RUN apt-get install -y ./deb_files/gdb_8.1-0ubuntu3.2_amd64.deb --allow-downgrades
 RUN apt-get install -y ./deb_files/gdb-doc_8.1-0ubuntu3.2_all.deb --allow-downgrades
+
 RUN apt-get install -y ./deb_files/bsdmainutils_11.1.2ubuntu1_amd64.deb --allow-downgrades
 
-# Install bsdmainutils manual, as it is not properly installed for some reason
-RUN mkdir ~/bsdmainutils_tmp
-RUN dpkg-deb -x ./deb_files/bsdmainutils_11.1.2ubuntu1_amd64.deb ~/bsdmainutils_tmp
-RUN cp ~/bsdmainutils_tmp/usr/share/man/man1/*.1.gz /usr/share/man/man1/
-RUN mandb
-RUN rm -rf ~/bsdmainutils_tmp
+# Packages for vmware, Not needed for docker/wsl
+# Leaving it here for clarity and future support if necessary
+# RUN apt-get install -y ./deb_files/open-vm-tools_11.0.5-4ubuntu0.18.04.1_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/open-vm-tools-desktop_11.0.5-4ubuntu0.18.04.1_amd64.deb --allow-downgrades
 
-RUN mkdir ~/cpp_tmp
-RUN dpkg-deb -x ./deb_files/cpp-7_7.5.0-3ubuntu1~18.04_amd64.deb ~/cpp_tmp
-RUN cp ~/cpp_tmp/usr/share/man/man1/*.1.gz /usr/share/man/man1/
-RUN mandb
-RUN rm -rf ~/cpp_tmp
+# Seems Like this is meant for Atam
+# RUN apt-get install -y ./deb_files/libc6_2.28-0ubuntu1_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/libicu63_63.1-6_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/libqt5core5a_5.11.2+dfsg-6ubuntu1_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/libqt5widgets5_5.11.2+dfsg-6ubuntu1_amd64.deb --allow-downgrades
+# RUN apt-get install -y ./deb_files/sasm_3.10.1-1_amd64.deb --allow-downgrades
 
-RUN mkdir ~/gcc_tmp
-RUN dpkg-deb -x ./deb_files/gcc-7_7.5.0-3ubuntu1~18.04_amd64.deb ~/gcc_tmp
-RUN cp ~/gcc_tmp/usr/share/man/man1/*.1.gz /usr/share/man/man1/
-RUN mandb
-RUN rm -rf ~/gcc_tmp
+# Install deb manuals, as they are not properly installed for some reason
+RUN for deb in ./deb_files/*.deb; do \
+      tmpdir=$(mktemp -d); \
+      dpkg-deb -x "$deb" "$tmpdir"; \
+      for section in "$tmpdir/usr/share/man/man"*; do \
+        if [ -d "$section" ]; then \
+          cp "$section"/*.gz "/usr/share/man/$(basename "$section")/" 2>/dev/null || true; \
+        fi; \
+      done; \
+      rm -rf "$tmpdir"; \
+    done && mandb
 
 
 # Securely create student user
