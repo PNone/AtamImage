@@ -8,10 +8,33 @@ on:
 jobs:
   build-and-export:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - name: atam
+            dockerfile: atam/Atam.Dockerfile
+            context: atam
+            name_upper: ATAM
+          - name: opsys
+            dockerfile: OperatingSystems/OpSys.Dockerfile
+            context: OperatingSystems
+            name_upper: OS
 
     env:
       OP_SYS_TAG: ${{ github.ref_name }}
       COMMIT_TAG: ${{ github.sha }}
+      # ATAM secrets
+      STUDENT_PASS_ATAM: ${{ secrets.STUDENT_PASS_ATAM }}
+      STUDENT_GROUP_NAME_ATAM: ${{ secrets.STUDENT_GROUP_NAME_ATAM }}
+      STUDENT_GROUP_UID_ATAM: ${{ secrets.STUDENT_GROUP_UID_ATAM }}
+      STUDENT_UID_ATAM: ${{ secrets.STUDENT_UID_ATAM }}
+      # OS secrets
+      STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
+      STUDENT_GROUP_NAME_OS: ${{ secrets.STUDENT_GROUP_NAME_OS }}
+      STUDENT_GROUP_UID_OS: ${{ secrets.STUDENT_GROUP_UID_OS }}
+      STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
+      # GitHub token for release upload
+      GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
 
     permissions:
       contents: write  # Required to upload release assets
@@ -26,7 +49,6 @@ jobs:
         with:
           driver: docker-container
           install: true
-          use: false  # We'll manually create and use the builder
 
       - name: Create and use custom builder
         run: |
@@ -42,93 +64,54 @@ jobs:
           restore-keys: |
             docker-global-cache
 
-      # Build atam image
-      - name: Build atam image
+      - name: Build ${{ matrix.target.name }} image
         run: |
           docker buildx build \
             --builder mybuilder \
             --platform linux/amd64 \
-            --secret id=student_pass_atam,env=STUDENT_PASS_ATAM \
-            --secret id=student_group_uid_atam,env=STUDENT_GROUP_UID_ATAM \
-            --secret id=student_group_name_atam,env=STUDENT_GROUP_NAME_ATAM \
-            --secret id=student_uid_atam,env=STUDENT_UID_ATAM \
-            -t atam:$COMMIT_TAG \
-            -f atam/Atam.Dockerfile atam \
+            --secret id=student_pass_${{ matrix.target.name }},env=STUDENT_PASS_${{ matrix.target.name_upper }} \
+            --secret id=student_group_uid_${{ matrix.target.name }},env=STUDENT_GROUP_UID_${{ matrix.target.name_upper }} \
+            --secret id=student_group_name_${{ matrix.target.name }},env=STUDENT_GROUP_NAME_${{ matrix.target.name_upper }} \
+            --secret id=student_uid_${{ matrix.target.name }},env=STUDENT_UID_${{ matrix.target.name_upper }} \
+            -t ${{ matrix.target.name }}:${{ env.COMMIT_TAG }} \
+            -f ${{ matrix.target.dockerfile }} ${{ matrix.target.context }} \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
             --load
-        env:
-          STUDENT_PASS_ATAM: ${{ secrets.STUDENT_PASS_ATAM }}
-          STUDENT_GROUP_NAME_ATAM: ${{ secrets.STUDENT_GROUP_NAME_ATAM }}
-          STUDENT_GROUP_UID_ATAM: ${{ secrets.STUDENT_GROUP_UID_ATAM }}
-          STUDENT_UID_ATAM: ${{ secrets.STUDENT_UID_ATAM }}
-
-      # Build opsys image
-      - name: Build opsys image
-        run: |
-          docker buildx build \
-            --builder mybuilder \
-            --platform linux/amd64 \
-            --secret id=student_pass_os,env=STUDENT_PASS_OS \
-            --secret id=student_group_uid_os,env=STUDENT_GROUP_UID_OS \
-            --secret id=student_group_name_os,env=STUDENT_GROUP_NAME_OS \
-            --secret id=student_uid_os,env=STUDENT_UID_OS \
-            -t opsys:$COMMIT_TAG \
-            -f OperatingSystems/OpSys.Dockerfile OperatingSystems \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
-            --load
-        env:
-          STUDENT_PASS_OS: ${{ secrets.STUDENT_PASS_OS }}
-          STUDENT_GROUP_NAME_OS: ${{ secrets.STUDENT_GROUP_NAME_OS }}
-          STUDENT_GROUP_UID_OS: ${{ secrets.STUDENT_GROUP_UID_OS }}
-          STUDENT_UID_OS: ${{ secrets.STUDENT_UID_OS }}
 
       # Save image tarballs
-      - name: Save image tarballs
+      - name: Save ${{ matrix.target.name }} image tarball
         run: |
-          docker save atam:$COMMIT_TAG -o AtamUbuntu-image-${OP_SYS_TAG}.tar
-          docker save opsys:$COMMIT_TAG -o OpSysUbuntu-image-${OP_SYS_TAG}.tar
+          docker save ${{ matrix.target.name }}:${{ env.COMMIT_TAG }} -o ${{ matrix.target.name | title }}Ubuntu-image-${OP_SYS_TAG}.tar
 
       # Export rootfs tarballs from containers
-      - name: Export rootfs tarballs
+      - name: Export ${{ matrix.target.name }} rootfs tarball
         run: |
-          container_id_atam=$(docker run -t -d --name AtamUbuntuContainer atam:$COMMIT_TAG /bin/bash)
-          docker export --output=AtamUbuntu-rootfs-${OP_SYS_TAG}.tar $container_id_atam
-
-          container_id_opsys=$(docker run -t -d --name OpSysUbuntuContainer opsys:$COMMIT_TAG /bin/bash)
-          docker export --output=OpSysUbuntu-rootfs-${OP_SYS_TAG}.tar $container_id_opsys
+          container_id=$(docker run -t -d --name ${{ matrix.target.name }}Container ${{ matrix.target.name }}:${{ env.COMMIT_TAG }} /bin/bash)
+          docker export --output=${{ matrix.target.name | title }}Ubuntu-rootfs-${OP_SYS_TAG}.tar $container_id
 
       # Compress all tarballs
-      - name: Compress tarballs
+      - name: Compress ${{ matrix.target.name }} tarballs
         run: |
-          gzip -9 AtamUbuntu-image-${OP_SYS_TAG}.tar
-          gzip -9 AtamUbuntu-rootfs-${OP_SYS_TAG}.tar
-          gzip -9 OpSysUbuntu-image-${OP_SYS_TAG}.tar
-          gzip -9 OpSysUbuntu-rootfs-${OP_SYS_TAG}.tar
+          gzip -9 ${{ matrix.target.name | title }}Ubuntu-image-${OP_SYS_TAG}.tar
+          gzip -9 ${{ matrix.target.name | title }}Ubuntu-rootfs-${OP_SYS_TAG}.tar
 
       # Upload tarballs as artifacts
-      - name: Upload artifacts
+      - name: Upload ${{ matrix.target.name }} artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Docker-Tarballs-${{ env.OP_SYS_TAG }}
+          name: Docker-${{ matrix.target.name | title }}-${{ env.OP_SYS_TAG }}
           path: |
-            AtamUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            AtamUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
+            ${{ matrix.target.name | title }}Ubuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            ${{ matrix.target.name | title }}Ubuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
 
       # Upload tarballs to GitHub Release
-      - name: Upload to GitHub Release
+      - name: Upload ${{ matrix.target.name }} to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            AtamUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            AtamUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
-            OpSysUbuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+            ${{ matrix.target.name | title }}Ubuntu-image-${{ env.OP_SYS_TAG }}.tar.gz
+            ${{ matrix.target.name | title }}Ubuntu-rootfs-${{ env.OP_SYS_TAG }}.tar.gz
 
       # Save Docker layer cache
       - name: Save Docker layer cache
